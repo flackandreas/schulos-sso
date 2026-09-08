@@ -20,6 +20,19 @@ final class Konfiguration
         public readonly string $clientGeheimnis,
         public readonly string $rueckadresse,
         public readonly string $bereiche = 'openid profile email groups',
+        /**
+         * Adresse, unter der der Anbieter vom Server aus erreichbar ist.
+         *
+         * Im Containerverbund ist die oeffentliche Adresse von innen oft nicht
+         * routbar: der Browser spricht "https://schulos.schule.de", der
+         * Container erreicht denselben Dienst nur als "http://portal". Fuer
+         * die Weiterleitungen zaehlt weiterhin die oeffentliche Adresse - nur
+         * die Abrufe von Server zu Server (Entdeckung, Token, UserInfo, JWKS)
+         * laufen ueber diese hier.
+         *
+         * Leer heisst: es gibt keinen Unterschied.
+         */
+        public readonly string $internerAussteller = '',
         public readonly string $cacheVerzeichnis = '',
         public readonly int $zeitabweichung = 60,
         public readonly bool $tlsPruefen = true,
@@ -48,6 +61,7 @@ final class Konfiguration
             clientGeheimnis: $lies('CLIENT_SECRET'),
             rueckadresse: $lies('REDIRECT_URI'),
             bereiche: $lies('SCOPES', 'openid profile email groups'),
+            internerAussteller: rtrim($lies('INTERN'), '/'),
             cacheVerzeichnis: $cacheVerzeichnis,
             zeitabweichung: (int) $lies('LEEWAY', '60'),
             tlsPruefen: $lies('TLS_VERIFY', '1') !== '0',

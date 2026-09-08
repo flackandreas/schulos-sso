@@ -34,7 +34,8 @@ final class Anmeldung
         $this->entdeckung = $entdeckung ?? new Entdeckung(
             $this->http,
             $konfiguration->aussteller,
-            $konfiguration->cacheVerzeichnis
+            $konfiguration->cacheVerzeichnis,
+            $konfiguration->internerAussteller
         );
     }
 
@@ -110,7 +111,7 @@ final class Anmeldung
             throw new SsoFehler('Es wurde kein Autorisierungscode uebergeben.');
         }
 
-        $antwort = $this->http->sendeFormular($this->entdeckung->endpunkt('token_endpoint'), [
+        $antwort = $this->http->sendeFormular($this->entdeckung->intern($this->entdeckung->endpunkt('token_endpoint')), [
             'grant_type' => 'authorization_code',
             'code' => $code,
             'redirect_uri' => $this->konfiguration->rueckadresse,
@@ -142,7 +143,7 @@ final class Anmeldung
         if ($zugriffstoken !== '') {
             try {
                 $weitere = $this->http->holeJson(
-                    $this->entdeckung->endpunkt('userinfo_endpoint'),
+                    $this->entdeckung->intern($this->entdeckung->endpunkt('userinfo_endpoint')),
                     ['Authorization: Bearer ' . $zugriffstoken]
                 );
 
@@ -308,7 +309,7 @@ final class Anmeldung
     {
         return $this->vorrat ??= new Schluesselvorrat(
             $this->http,
-            $this->entdeckung->endpunkt('jwks_uri'),
+            $this->entdeckung->intern($this->entdeckung->endpunkt('jwks_uri')),
             $this->konfiguration->cacheVerzeichnis
         );
     }

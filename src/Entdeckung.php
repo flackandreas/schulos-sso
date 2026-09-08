@@ -22,7 +22,30 @@ final class Entdeckung
         private readonly HttpAbruf $http,
         private readonly string $aussteller,
         private readonly string $cacheVerzeichnis = '',
+        private readonly string $internerAussteller = '',
     ) {
+    }
+
+    /**
+     * Wandelt eine Endpunktadresse in die Fassung fuer Abrufe von Server zu
+     * Server um.
+     *
+     * Ersetzt wird ausschliesslich der Anfang, und nur wenn er genau der
+     * oeffentlichen Ausstelleradresse entspricht. Damit kann das
+     * Entdeckungsdokument keine Adresse unterschieben, die woanders hinzeigt.
+     */
+    public function intern(string $adresse): string
+    {
+        if ($this->internerAussteller === '') {
+            return $adresse;
+        }
+
+        $oeffentlich = rtrim($this->aussteller, '/');
+        if (!str_starts_with($adresse, $oeffentlich . '/') && $adresse !== $oeffentlich) {
+            return $adresse;
+        }
+
+        return $this->internerAussteller . substr($adresse, strlen($oeffentlich));
     }
 
     public function endpunkt(string $name): string
@@ -59,11 +82,12 @@ final class Entdeckung
             }
         }
 
-        $dokument = $this->http->holeJson(rtrim($this->aussteller, '/') . '/.well-known/openid-configuration');
+        $basis = $this->internerAussteller !== '' ? $this->internerAussteller : rtrim($this->aussteller, '/');
+        $dokument = $this->http->holeJson($basis . '/.well-known/openid-configuration');
 
-        // Der Aussteller im Dokument muss zu dem passen, den wir gefragt haben -
-        // sonst haette eine umgeleitete Adresse einen fremden Anbieter
-        // untergeschoben.
+        // Der Aussteller im Dokument muss der oeffentliche sein - auch dann,
+        // wenn wir ihn ueber die interne Adresse abgerufen haben. Sonst haette
+        // eine umgeleitete Adresse einen fremden Anbieter untergeschoben.
         if (rtrim((string) ($dokument['issuer'] ?? ''), '/') !== rtrim($this->aussteller, '/')) {
             throw new SsoFehler('Das Entdeckungsdokument nennt einen anderen Aussteller als angefragt.');
         }
