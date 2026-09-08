@@ -23,6 +23,7 @@ final class Anmeldung
     private readonly Entdeckung $entdeckung;
     private ?Schluesselvorrat $vorrat = null;
     private string $letztesZiel = '/';
+    private string $letztesIdToken = '';
 
     public function __construct(
         private readonly Konfiguration $konfiguration,
@@ -124,6 +125,7 @@ final class Anmeldung
         }
 
         $nutzdaten = Jwt::pruefe($idToken, $this->schluesselvorrat());
+        $this->letztesIdToken = $idToken;
         Jwt::pruefeAnspruch(
             $nutzdaten,
             $this->konfiguration->aussteller,
@@ -168,6 +170,17 @@ final class Anmeldung
     public function zielNachAnmeldung(): string
     {
         return $this->letztesZiel;
+    }
+
+    /**
+     * Das zuletzt geprueft ID-Token im Rohformat.
+     *
+     * Das Modul legt es in seiner Sitzung ab und reicht es beim Abmelden als
+     * id_token_hint zurueck - daran erkennt der Anbieter, wen er abmeldet.
+     */
+    public function letztesIdToken(): string
+    {
+        return $this->letztesIdToken;
     }
 
     /**
