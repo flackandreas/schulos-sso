@@ -98,23 +98,42 @@ kein Double, weil genau diese Prüfung der Kern des Pakets ist.
 
 ## Einbindung
 
-Solange das Paket nicht auf GitHub liegt, binden die Module es aus dem
-Nachbarverzeichnis ein:
-
 ```json
 "repositories": [
-    { "type": "path", "url": "../../schulos-sso", "options": { "symlink": false } }
-]
+    { "type": "vcs", "url": "https://github.com/flackandreas/schulos-sso.git" }
+],
+"require": {
+    "schulos/sso": "^1.0"
+}
 ```
 
-`symlink: false` kopiert statt zu verknüpfen — so landet das Paket in `vendor/`
-und wird mit ausgeliefert. **Nach jeder Änderung hier müssen die Module es neu
-ziehen:**
+HTTPS statt SSH, damit die CI der Module ohne hinterlegten Schlüssel an das
+Paket kommt. Die Module zeigen auf eine Version, nicht auf einen Zweig: ein
+neuer Stand wird hier getaggt und dort bewusst gezogen, statt bei jedem
+`composer update` mitzuwandern.
+
+Neue Fassung veröffentlichen:
 
 ```bash
-cd /pfad/zum/modul/src
-composer update schulos/sso
+git tag -a v1.1.0 -m "Was sich geändert hat" && git push origin v1.1.0
 ```
 
-Sobald das Paket auf GitHub liegt, wird daraus ein `vcs`-Repository und der
-Schritt entfällt.
+Danach in den Modulen:
+
+```bash
+cd /pfad/zum/modul/src && composer update schulos/sso
+```
+
+`vendor/` ist in den Modulen versioniert, das Deployment führt kein
+`composer install` aus — die neue Fassung muss deshalb mit committet werden.
+
+## Wer es benutzt
+
+| | |
+|---|---|
+| `feedback_rstn` | Anträge |
+| `unterricht` | Unterricht & Feedback |
+| `schulos-portal` | für die vorgelagerte Anmeldung über IServ |
+
+Das Portal ist selbst Anbieter und benutzt dasselbe Paket als Client gegenüber
+IServ. Damit ist der Ablauf einmal beschrieben statt zweimal.
