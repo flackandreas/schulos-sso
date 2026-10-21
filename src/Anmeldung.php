@@ -270,8 +270,14 @@ final class Anmeldung
     /**
      * Sammelt Gruppenangaben aus den ueblichen Claims ein.
      *
-     * IServ liefert "groups", andere Anbieter "roles" oder "memberOf" - und
-     * manche eine Zeichenkette statt einer Liste.
+     * Andere Anbieter liefern "groups", "roles" oder "memberOf" - und manche
+     * eine Zeichenkette statt einer Liste.
+     *
+     * IServ liefert unter dem Scope "iserv:groups" den Claim "iserv:groups",
+     * und zwar nach id geschluesselte Objekte {id, act, name}. Gezaehlt wird
+     * der Anzeigename ("Fachschaft Mathematik"), ersatzweise die Kennung
+     * ("fachschaft-mathematik"). Den Scope "groups" bietet IServ zwar in der
+     * Entdeckung an, im Client ist er aber nicht auswaehlbar.
      *
      * @param array<string,mixed> $claims
      * @return list<string>
@@ -279,7 +285,7 @@ final class Anmeldung
     private static function gruppenAus(array $claims): array
     {
         $gruppen = [];
-        foreach (['groups', 'roles', 'group', 'memberOf'] as $name) {
+        foreach (['groups', 'iserv:groups', 'roles', 'iserv:roles', 'group', 'memberOf'] as $name) {
             $wert = $claims[$name] ?? null;
             if (is_string($wert) && $wert !== '') {
                 $gruppen[] = $wert;
@@ -287,6 +293,11 @@ final class Anmeldung
                 foreach ($wert as $eintrag) {
                     if (is_string($eintrag) && $eintrag !== '') {
                         $gruppen[] = $eintrag;
+                    } elseif (is_array($eintrag)) {
+                        $anzeige = $eintrag['name'] ?? $eintrag['act'] ?? null;
+                        if (is_string($anzeige) && $anzeige !== '') {
+                            $gruppen[] = $anzeige;
+                        }
                     }
                 }
             }

@@ -61,9 +61,16 @@ Alle mit gemeinsamem Vorsatz, hier `PORTAL_`:
 | `CLIENT_ID` | Kennung des Moduls |
 | `CLIENT_SECRET` | Geheimnis zwischen Modul und Anbieter |
 | `REDIRECT_URI` | Rückadresse, muss beim Anbieter hinterlegt sein |
-| `SCOPES` | Vorgabe `openid profile email groups` |
+| `SCOPES` | Vorgabe `openid profile email groups`; gegenüber IServ `iserv:groups` statt `groups` (siehe unten) |
 | `INTERN` | Adresse für Abrufe von Server zu Server, siehe unten |
 | `LEEWAY` | Erlaubte Zeitabweichung in Sekunden, Vorgabe 60 |
+
+**Gruppen.** Gelesen werden die Claims `groups`, `roles`, `group` und
+`memberOf`, als Liste oder einzelne Zeichenkette. IServ bietet den Scope
+`groups` zwar in der Entdeckung an, im Client ist er aber nicht auswählbar;
+Gruppen kommen dort unter dem Scope `iserv:groups` im gleichnamigen Claim, als
+nach Kennung geschlüsselte Objekte `{id, act, name}`. Gezählt wird der
+Anzeigename, ersatzweise die Kennung – dasselbe gilt für `iserv:roles`.
 
 Fehlen `ISSUER`, `CLIENT_ID` oder `CLIENT_SECRET`, meldet `aktiv()` false und
 das Modul läuft im Alleinbetrieb weiter. Ist der Satz nur halb ausgefüllt,
