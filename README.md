@@ -138,7 +138,7 @@ cd /pfad/zum/modul/src && composer update schulos/sso
 
 | | |
 |---|---|
-| `feedback_rstn` | Anträge |
+| `antraege` (früher `feedback_rstn`) | Anträge |
 | `unterricht` | Unterricht & Feedback |
 | `schulos-portal` | für die vorgelagerte Anmeldung über IServ |
 
